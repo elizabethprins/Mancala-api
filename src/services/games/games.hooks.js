@@ -1,11 +1,13 @@
 
 
+const createGame = require('../../hooks/create-game');
+
 module.exports = {
   before: {
     all: [],
     find: [],
     get: [],
-    create: [],
+    create: [createGame()],
     update: [],
     patch: [],
     remove: []
