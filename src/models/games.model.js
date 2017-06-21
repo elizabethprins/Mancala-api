@@ -27,7 +27,7 @@ module.exports = function (app) {
     turn: { type: Number, required: true, 'default': 0 },
     createdAt: { type: Date, 'default': Date.now },
     updatedAt: { type: Date, 'default': Date.now },
-    userId: { type: Schema.Types.ObjectId, ref: 'user' },
+    ownerId: { type: Schema.Types.ObjectId, ref: 'user' },
   });
 
   return mongooseClient.model('games', games);
