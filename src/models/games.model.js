@@ -8,17 +8,17 @@ module.exports = function (app) {
 
   const pitSchema = new Schema({
     value: { type: Number, required: true }, // string if img url
-    belongsToOwner: { type: Boolean, required: true },
+    belongsToOwner: { type: Boolean, default: undefined },
   });
 
   const playerSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'user' },
-    name: { type: String, required: true },
+    name: { type: String },
     score: { type: Number },
   });
 
   const games = new Schema({
-    text: { type: String, required: true },
+    text: { type: String },
     pits: [pitSchema],
     players: [playerSchema],
     started: { type: Boolean, required: true, 'default': false },
