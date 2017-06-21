@@ -7,6 +7,7 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
     // that resolves with the `hook` object for asynchronous operations
     const { user } = hook.params
 
+
     // assign the owner of the game
     hook.data.userId = user._id,
     // add the owner to the players, as the first player in the game
@@ -17,8 +18,17 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
 
 
 
+
+
     //create the board with initial values
-    hook.data.pits = [ 4, 4, 4, 4, 4, 4 ]
+    const pitsPlayer1 = [4, 4, 4, 4, 4, 4]
+    const pitsPlayer2 = [4, 4, 4, 4, 4, 4]
+
+
+
+
+    hook.data.pits = pitsPlayer1
+      .map((pitsPlayer1) => ({ value: 4, belongsToOwner: true }))
 
 
     return Promise.resolve(hook);

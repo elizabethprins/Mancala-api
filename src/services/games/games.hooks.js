@@ -1,8 +1,7 @@
-// src/services/recipes/recipes.hooks.js
-
 const { authenticate } = require('feathers-authentication').hooks;
-const { restrictToOwner, associateCurrentUser, restrictToAuthenticated } = require('feathers-authentication-hooks');
+const { restrictToAuthenticated } = require('feathers-authentication-hooks');
 const { populate } = require('feathers-hooks-common');
+
 const createGame = require('../../hooks/create-game');
 
 // Configure where we will get the author data from (the users service),
@@ -26,17 +25,17 @@ const restrict = [
 const drawStones = require('../../hooks/draw-stones');
 
 
+const joinGame = require('../../hooks/join-game');
+
+
 module.exports = {
   before: {
     all: [],
     find: [],
     get: [],
-    create: [createGame(),
-      authenticate('jwt'),
-      restrictToAuthenticated(),
-      associateCurrentUser({ as: 'ownerId' })],
-    update: [drawStones()],
-    patch: [drawStones()],
+    create: [createGame()],
+    update: [drawStones(), joinGame()],
+    patch: [drawStones(), joinGame()],
     remove: []
   },
 
