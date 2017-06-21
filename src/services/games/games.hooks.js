@@ -23,6 +23,9 @@ const restrict = [
 ];
 
 
+const drawStones = require('../../hooks/draw-stones');
+
+
 module.exports = {
   before: {
     all: [],
@@ -32,8 +35,8 @@ module.exports = {
       authenticate('jwt'),
       restrictToAuthenticated(),
       associateCurrentUser({ as: 'ownerId' })],
-    update: [],
-    patch: [],
+    update: [drawStones()],
+    patch: [drawStones()],
     remove: []
   },
 
