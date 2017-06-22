@@ -3,10 +3,8 @@
 
 module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
   return function (hook) {
-    // Hooks can either return nothing or a promise
-    // that resolves with the `hook` object for asynchronous operations
-    const { user } = hook.params
 
+    const { user } = hook.params
 
     // assign the owner of the game
     hook.data.userId = user._id,
@@ -19,16 +17,14 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
 
 
 
-
     //create the board with initial values
-    const pitsPlayer1 = [4, 4, 4, 4, 4, 4]
-    const pitsPlayer2 = [4, 4, 4, 4, 4, 4]
+    const pit = 4
 
 
 
 
-    hook.data.pits = pitsPlayer1
-      .map((pitsPlayer1) => ({ value: 4, belongsToOwner: true }))
+
+    hook.data.pit = pit
 
 
     return Promise.resolve(hook);
