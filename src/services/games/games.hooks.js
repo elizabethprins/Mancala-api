@@ -10,7 +10,7 @@ const ownerSchema = {
   include: {
     service: 'users',
     nameAs: 'owner',
-    parentField: 'ownerId',
+    parentField: 'userId',
     childField: '_id',
   }
 };
