@@ -14,8 +14,6 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
     }]
 
 
-
-
     //create the board with initial values
 
     hook.data.pits = [4, 4, 4, 4, 4, 4]
