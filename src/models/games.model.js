@@ -6,19 +6,13 @@ module.exports = function (app) {
   const mongooseClient = app.get('mongooseClient');
   const { Schema } = mongooseClient;
 
-  const pitSchema = new Schema({
-    value: { type: Number }, // string if img url
-    belongsToOwner: { type: Boolean, default: undefined },
-  });
 
   const playerSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'users' },
-    score: { type: Number, 'default': 0 },
   });
 
   const games = new Schema({
-    text: { type: String },
-    pits: [pitSchema],
+    pits: { type: Array },
     players: [playerSchema],
     started: { type: Boolean, 'default': false },
     winnerId: { type: Schema.Types.ObjectId, ref: 'users' },
