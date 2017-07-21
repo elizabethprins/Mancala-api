@@ -24,7 +24,6 @@ const restrict = [
 
 const drawStones = require('../../hooks/draw-stones');
 
-
 const joinGame = require('../../hooks/join-game');
 
 
