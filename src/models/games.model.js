@@ -9,10 +9,16 @@ module.exports = function (app) {
 
   const playerSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'users' },
+    score: { type: Number },
+  });
+
+  const pitSchema = new Schema({
+    value: { type: Number },
+    belongsToOwner: { type: Boolean },
   });
 
   const games = new Schema({
-    pits: { type: Array },
+    pits: [pitSchema],
     players: [playerSchema],
     started: { type: Boolean, 'default': false },
     winnerId: { type: Schema.Types.ObjectId, ref: 'users' },
