@@ -7,9 +7,9 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
     // Hooks can either return nothing or a promise
     // that resolves with the `hook` object for asynchronous operations
 
-    if (hook.data.draw === undefined) return Promise.resolve(hook);
+    if (hook.data.draw.index === undefined) return Promise.resolve(hook);
 
-    console.log(hook.data)
+    console.log(hook.data.draw.index)
     const { user } = hook.params;
 
     // see if user is a player
@@ -29,8 +29,16 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
           throw new errors.Unprocessable('It is not your turn!');
         }
 
+        if (turn === 0 && hook.data.draw.belongsToOwner === false) {
+          throw new errors.Unprocessable('Stick to your own side!')
+        }
 
-        const drawIndex = (turn === 0) ? (hook.data.draw) : (hook.data.draw + 6)
+        if (turn === 1 && hook.data.draw.belongsToOwner === true) {
+          throw new errors.Unprocessable('Stick to your own side!')
+        }
+
+
+        const drawIndex = (turn === 0) ? (hook.data.draw.index) : (hook.data.draw.index + 6)
         const x = (pits.filter((pit, index) => drawIndex === index))[0].value
         const goal = (turn === 0) ? 6 : 0
 
