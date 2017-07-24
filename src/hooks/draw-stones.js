@@ -46,8 +46,8 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
         let nextIndex = (Array.from({length: x}, (v, i) => i)).map((a) => a + drawIndex + 1)
           let upperRow = nextIndex.slice(0, (nextIndex.indexOf(12)))
           let restLength = (nextIndex.slice(nextIndex.indexOf(12))).length
-          let downerRow = Array.from({length: restLength}, (v, i) => i)
-          let nextFromTop = upperRow.concat(downerRow)
+          let bottomRow = Array.from({length: restLength}, (v, i) => i)
+          let nextFromTop = upperRow.concat(bottomRow)
         let indexNextPits = nextIndex.includes(12) ? nextFromTop : nextIndex
 
 
@@ -55,6 +55,23 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
           let bottomHalf = nextPits.filter((pit) => pit.belongsToOwner === true)
           let topHalf = nextPits.filter((pit) => pit.belongsToOwner === false)
         let otherwisePits = (turn === 0) ? nextPits.slice(0, nextPits.length-1) : topHalf.concat(bottomHalf).slice(0, nextPits.length-1)
+
+
+
+        let lastPit = (indexNextPits.includes(goal)) ? otherwisePits[otherwisePits.length-1] : nextPits[nextPits.length-1]
+
+
+        if (turn === 0) {
+          if (lastPit.value === 0 && lastPit.belongsToOwner === true) {
+            // return something, like: find oppositePit() => {
+          //   return Object.assign({}, pit, { value: x-x })
+          // and collect the score
+          // }
+          }
+        }
+
+
+
 
 
         const newPits = pits.map((pit, index) => {
@@ -88,7 +105,7 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
 
 
 
-        console.log('**************************************************', newPits, "bottomHalf", bottomHalf)
+        console.log('**************************************************', newPits, "bottomHalf", bottomHalf, "POPOPOPOP",lastPit )
         console.log('**************************************************', "nextIndex", nextIndex,"indexNextPits", "goal", goal, indexNextPits, indexNextPits.includes(goal), "and nextPits", nextPits, "and otherwisePits", otherwisePits)
         console.log('**************************************************', players, "turn", turn)
 
