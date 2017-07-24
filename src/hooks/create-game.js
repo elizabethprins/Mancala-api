@@ -10,6 +10,7 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
     hook.data.userId = user._id,
     // add the owner to the players, as the first player in the game
     hook.data.players = [{
+      name: user.name,
       userId: user._id,
       score: 0,
     }]

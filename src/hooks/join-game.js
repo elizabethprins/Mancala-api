@@ -22,7 +22,7 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
 
         if (!joined && wantsToJoin) {
           hook.data = {
-            players: players.concat({ userId: user._id, pairs: [] })
+            players: players.concat({ name: user.name, userId: user._id, score: 0 })
           }
         }
 
