@@ -7,7 +7,7 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
     // Hooks can either return nothing or a promise
     // that resolves with the `hook` object for asynchronous operations
 
-    if (hook.data.draw.index === undefined) return Promise.resolve(hook);
+    if (hook.data.draw === undefined) return Promise.resolve(hook);
 
     console.log(hook.data.draw.index)
     const { user } = hook.params;
@@ -50,14 +50,11 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
           let nextFromTop = upperRow.concat(downerRow)
         let indexNextPits = nextIndex.includes(12) ? nextFromTop : nextIndex
 
-        // let q = drawIndex + 1
-        // let nextPits = pits.slice(q, q + x)
-        // let otherwisePits = pits.slice(q, q + x - 1)
 
         let nextPits = pits.filter((pit, index) => indexNextPits.includes(index))
           let bottomHalf = nextPits.filter((pit) => pit.belongsToOwner === true)
           let topHalf = nextPits.filter((pit) => pit.belongsToOwner === false)
-        let otherwisePits = topHalf.concat(bottomHalf).slice(0, nextPits.length-1)
+        let otherwisePits = (turn === 0) ? nextPits.slice(0, nextPits.length-1) : topHalf.concat(bottomHalf).slice(0, nextPits.length-1)
 
 
         const newPits = pits.map((pit, index) => {
