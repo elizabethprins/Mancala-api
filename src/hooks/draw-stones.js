@@ -9,7 +9,7 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
 
     if (hook.data.draw === undefined) return Promise.resolve(hook);
 
-    console.log(hook.data)
+    console.log(hook.data.draw.index)
     const { user } = hook.params;
 
     // see if user is a player
@@ -29,8 +29,16 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
           throw new errors.Unprocessable('It is not your turn!');
         }
 
+        if (turn === 0 && hook.data.draw.belongsToOwner === false) {
+          throw new errors.Unprocessable('Stick to your own side!')
+        }
 
-        const drawIndex = (turn === 0) ? (hook.data.draw) : (hook.data.draw + 6)
+        if (turn === 1 && hook.data.draw.belongsToOwner === true) {
+          throw new errors.Unprocessable('Stick to your own side!')
+        }
+
+
+        const drawIndex = (turn === 0) ? (hook.data.draw.index) : (hook.data.draw.index + 6)
         const x = (pits.filter((pit, index) => drawIndex === index))[0].value
         const goal = (turn === 0) ? 6 : 0
 
@@ -38,18 +46,32 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
         let nextIndex = (Array.from({length: x}, (v, i) => i)).map((a) => a + drawIndex + 1)
           let upperRow = nextIndex.slice(0, (nextIndex.indexOf(12)))
           let restLength = (nextIndex.slice(nextIndex.indexOf(12))).length
-          let downerRow = Array.from({length: restLength}, (v, i) => i)
-          let nextFromTop = upperRow.concat(downerRow)
+          let bottomRow = Array.from({length: restLength}, (v, i) => i)
+          let nextFromTop = upperRow.concat(bottomRow)
         let indexNextPits = nextIndex.includes(12) ? nextFromTop : nextIndex
 
-        // let q = drawIndex + 1
-        // let nextPits = pits.slice(q, q + x)
-        // let otherwisePits = pits.slice(q, q + x - 1)
 
         let nextPits = pits.filter((pit, index) => indexNextPits.includes(index))
           let bottomHalf = nextPits.filter((pit) => pit.belongsToOwner === true)
           let topHalf = nextPits.filter((pit) => pit.belongsToOwner === false)
-        let otherwisePits = topHalf.concat(bottomHalf).slice(0, nextPits.length-1)
+        let otherwisePits = (turn === 0) ? nextPits.slice(0, nextPits.length-1) : topHalf.concat(bottomHalf).slice(0, nextPits.length-1)
+
+
+
+        let lastPit = (indexNextPits.includes(goal)) ? otherwisePits[otherwisePits.length-1] : nextPits[nextPits.length-1]
+
+
+        if (turn === 0) {
+          if (lastPit.value === 0 && lastPit.belongsToOwner === true) {
+            // return something, like: find oppositePit() => {
+          //   return Object.assign({}, pit, { value: x-x })
+          // and collect the score
+          // }
+          }
+        }
+
+
+
 
 
         const newPits = pits.map((pit, index) => {
@@ -83,7 +105,7 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
 
 
 
-        console.log('**************************************************', newPits, "bottomHalf", bottomHalf)
+        console.log('**************************************************', newPits, "bottomHalf", bottomHalf, "POPOPOPOP",lastPit )
         console.log('**************************************************', "nextIndex", nextIndex,"indexNextPits", "goal", goal, indexNextPits, indexNextPits.includes(goal), "and nextPits", nextPits, "and otherwisePits", otherwisePits)
         console.log('**************************************************', players, "turn", turn)
 
