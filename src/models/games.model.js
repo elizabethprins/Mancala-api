@@ -8,6 +8,7 @@ module.exports = function (app) {
 
 
   const playerSchema = new Schema({
+    name: { type: Schema.Types.String, ref: 'users' },
     userId: { type: Schema.Types.ObjectId, ref: 'users' },
     score: { type: Number },
   });
