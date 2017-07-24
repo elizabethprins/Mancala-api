@@ -10,8 +10,6 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
     if (hook.data.draw === undefined) return Promise.resolve(hook);
 
     console.log("hook.data:",hook.data);
-    console.log("hook.id:", hook.id)
-    console.log("index", hook.data.draw.index)
 
     const { user } = hook.params;
 
@@ -24,31 +22,75 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
         const joined = playerIds.includes(user._id.toString());
         const hasTurn = playerIds.indexOf(user._id.toString()) === turn;
 
-        // if (!joined) {
-        //   throw new errors.Unprocessable('You are not a player in this game, so you can not play!');
-        // }
+        if (!joined) {
+          throw new errors.Unprocessable('You are not a player in this game, so you can not play!');
+        }
 
-        // if (!hasTurn) {
-        //   throw new errors.Unprocessable('It is not your turn!');
-        // }
+        if (!hasTurn) {
+          throw new errors.Unprocessable('It is not your turn!');
+        }
 
-        // const selectedPit = pits.map((pit, index) => {
-        //   let x = pit.value
-        //   if (pit._id.toString() === hook.data.draw._id) {
-        //     return Object.assign({}, pit, { value: x-x })
+
+        const x = (pits.filter((pit, index) => hook.data.draw === index))[0].value
+
+        let nextPits = pits.slice(hook.data.draw + 1, hook.data.draw + x + 1)
+        let otherwisePits = pits.slice(hook.data.draw + 1, hook.data.draw + x)
+
+        let indexNextPits = (Array.from({length: x}, (v, i) => i)).map((a) => a + hook.data.draw + 1)
+
+        let goal = (turn === 0) ? 6 : 0
+
+
+        const newPits = pits.map((pit, index) => {
+          if (hook.data.draw === index) {
+            return Object.assign({}, pit, { value: x-x })
+          }
+          if (indexNextPits.includes(goal)) {
+            if (otherwisePits.includes(pit)) {
+              return Object.assign({}, pit, { value: pit.value + 1 })
+            }
+          }
+          if (indexNextPits.includes(goal) === false) {
+            if (nextPits.includes(pit)) {
+              return Object.assign({}, pit, { value: pit.value + 1 })
+            }
+          }
+          return pit
+        })
+
+
+        if (indexNextPits.includes(goal)) { players[turn].score ++ }
+
+        // const nextPits = for (var i = (hook.data.draw+1); i = (hook.data.draw+x+1); i++) {
+        //   return Object.assign({}, pit, { value: 6 })
+        // }
+        // const nextPits = pits.fill( 6, (hook.data.draw+1), (hook.data.draw+x+1))
+
+        // let nextPits = pits.slice(hook.data.draw+1, hook.data.draw+1+x)
+        //
+        // const fillPits = pits.map((pit, index) => {
+        //   if (nextPits.includes(pit)) {
+        //     return Object.assign({}, pit, { value: pit.value + 1 })
         //   }
         //   return pit
         // })
 
-        const selectedPit = pits.filter((pit) => pit._id.toString() === hook.data.draw._id)
-        let x = hook.data.draw.value
-        const newPit = Object.assign({}, selectedPit[0], { value: x-x })
 
-        console.log("yaya", selectedPit, "newPit", newPit, "pit>>", hook.data.draw,"pit value>>", hook.data.draw.value, "hook.data", hook.data)
 
-        hook.data.draw.value = newPit.value
+        console.log('**************************************************', newPits)
+        console.log('**************************************************', indexNextPits)
+        console.log('**************************************************', players[turn])
 
-        console.log(hook.data, newPit)
+        // const selectedPit = pits.filter((pit) => pit._id.toString() === hook.data.draw._id)
+        // let x = hook.data.draw.value
+        // const newPit = Object.assign({}, selectedPit[0], { value: x-x })
+        //
+        // console.log("yaya", selectedPit, "turn", turn, "newPit", newPit, "pit>>", hook.data.draw,"pit value>>", hook.data.draw.value, "hook.data", hook.data)
+        //
+        // hook.data.draw.value = newPit.value
+        //
+        // console.log(hook.data, newPit)
+        // hook.data.pits = selectedPit
 
         return Promise.resolve(hook);
       })
