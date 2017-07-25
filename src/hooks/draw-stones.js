@@ -55,47 +55,108 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
           let bottomHalf = nextPits.filter((pit) => pit.belongsToOwner === true)
           let topHalf = nextPits.filter((pit) => pit.belongsToOwner === false)
         let otherwisePits = (turn === 0) ? nextPits.slice(0, nextPits.length-1) : topHalf.concat(bottomHalf).slice(0, nextPits.length-1)
-
-
+        let otherOtherwisePits = otherwisePits.slice(0, otherwisePits.length-1)
 
         let lastPit = (indexNextPits.includes(goal)) ? otherwisePits[otherwisePits.length-1] : nextPits[nextPits.length-1]
-
-
-        if (turn === 0) {
-          if (lastPit.value === 0 && lastPit.belongsToOwner === true) {
-            // return something, like: find oppositePit() => {
-          //   return Object.assign({}, pit, { value: x-x })
-          // and collect the score
-          // }
-          }
-        }
-
-
+        let oppositePit = pits.filter((pit, index) => index === (11 - pits.indexOf(lastPit)))[0]
 
 
 
         const newPits = pits.map((pit, index) => {
+
           if (drawIndex === index) {
             return Object.assign({}, pit, { value: x-x })
           }
+
           if (indexNextPits.includes(goal)) {
-            if (otherwisePits.includes(pit)) {
-              return Object.assign({}, pit, { value: pit.value + 1 })
+
+            if (indexNextPits.lastIndexOf(goal) !== 0) {
+
+              if (turn === 0 && lastPit.value === 0) {
+                if (lastPit.belongsToOwner === true && oppositePit.value > 0) {
+                  if (Array(lastPit, oppositePit).includes(pit)) {
+                    return Object.assign({}, pit, { value: 0 })
+                  }
+                  if (otherOtherwisePits.includes(pit)) {
+                    return Object.assign({}, pit, { value: pit.value + 1 })
+                  }
+                }
+              }
+
+              if (turn === 1 && lastPit.value === 0) {
+                if (lastPit.belongsToOwner === false && oppositePit.value > 0) {
+                  if (Array(lastPit, oppositePit).includes(pit)) {
+                    return Object.assign({}, pit, { value: 0 })
+                  }
+                  if (otherOtherwisePits.includes(pit)) {
+                    return Object.assign({}, pit, { value: pit.value + 1 })
+                  }
+                }
+              }
+
+              if (lastPit.value > 0 || oppositePit.value === 0) {
+                if (otherwisePits.includes(pit)) {
+                  return Object.assign({}, pit, { value: pit.value + 1 })
+                }
+              }
+            }
+
+            if (indexNextPits.lastIndexOf(goal) === 0) {
+              if (otherwisePits.includes(pit)) {
+                return Object.assign({}, pit, { value: pit.value + 1 })
+              }
             }
           }
+
           if (indexNextPits.includes(goal) === false) {
-            if (nextPits.includes(pit)) {
-              return Object.assign({}, pit, { value: pit.value + 1 })
+
+            if (turn === 0 && lastPit.value === 0) {
+              if (lastPit.belongsToOwner === true && oppositePit.value > 0) {
+                if (Array(lastPit, oppositePit).includes(pit)) {
+                  return Object.assign({}, pit, { value: 0 })
+                }
+                if (otherwisePits.includes(pit)) {
+                  return Object.assign({}, pit, { value: pit.value + 1 })
+                }
+              }
+            }
+
+            if (turn === 1 && lastPit.value === 0) {
+              if (lastPit.belongsToOwner === false && oppositePit.value > 0) {
+                if (Array(lastPit, oppositePit).includes(pit)) {
+                  return Object.assign({}, pit, { value: 0 })
+                }
+                if (otherwisePits.includes(pit)) {
+                  return Object.assign({}, pit, { value: pit.value + 1 })
+                }
+              }
+            }
+
+            if (lastPit.value > 0 || oppositePit.value === 0) {
+              if (nextPits.includes(pit)) {
+                return Object.assign({}, pit, { value: pit.value + 1 })
+              }
             }
           }
+          
           return pit
         })
 
+
         if (indexNextPits.includes(goal)) {
-          let newPlayers = players
           players[turn].score ++
-          hook.data.players = newPlayers
         }
+        if (indexNextPits.lastIndexOf(goal) !== 0) {
+          if (lastPit.value === 0 && oppositePit.value > 0) {
+            if ((turn === 1 && lastPit.belongsToOwner === false) || (turn === 0 && lastPit.belongsToOwner === true)) {
+              players[turn].score = players[turn].score + oppositePit.value + 1
+            }
+          }
+        }
+
+        let newPlayers = players
+        hook.data.players = newPlayers
+
 
         let newTurn = (turn === 0) ? 1 : 0
         if (indexNextPits.lastIndexOf(goal) === indexNextPits.length-1) newTurn = newTurn + 1
@@ -103,11 +164,9 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
         hook.data.turn = newTurn
 
 
-
-
-        console.log('**************************************************', newPits, "bottomHalf", bottomHalf, "POPOPOPOP",lastPit )
+        console.log('**************************************************', newPits, "bottomHalf", bottomHalf, "POPOPOPOP",lastPit, "opposite", oppositePit, "indexNextPits.lastIndexOf(goal)", indexNextPits.lastIndexOf(goal))
         console.log('**************************************************', "nextIndex", nextIndex,"indexNextPits", "goal", goal, indexNextPits, indexNextPits.includes(goal), "and nextPits", nextPits, "and otherwisePits", otherwisePits)
-        console.log('**************************************************', players, "turn", turn)
+        console.log('**************************************************', players, "turn", turn, "newTurn", newTurn)
 
 
         hook.data.pits = newPits
