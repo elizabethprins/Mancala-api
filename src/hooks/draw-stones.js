@@ -54,61 +54,128 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
         let nextPits = pits.filter((pit, index) => indexNextPits.includes(index))
           let bottomHalf = nextPits.filter((pit) => pit.belongsToOwner === true)
           let topHalf = nextPits.filter((pit) => pit.belongsToOwner === false)
+        // if you have to drop a stone (when passing the scorepit or capturing opponent's pit):
         let otherwisePits = (turn === 0) ? nextPits.slice(0, nextPits.length-1) : topHalf.concat(bottomHalf).slice(0, nextPits.length-1)
-
-
+        // and if you have to drop two (when passing the scorepit AND capturing opponent's pit):
+        let otherOtherwisePits = otherwisePits.slice(0, otherwisePits.length-1)
 
         let lastPit = (indexNextPits.includes(goal)) ? otherwisePits[otherwisePits.length-1] : nextPits[nextPits.length-1]
-
-
-        if (turn === 0) {
-          if (lastPit.value === 0 && lastPit.belongsToOwner === true) {
-            // return something, like: find oppositePit() => {
-          //   return Object.assign({}, pit, { value: x-x })
-          // and collect the score
-          // }
-          }
-        }
-
-
+        let oppositePit = pits.filter((pit, index) => index === (11 - pits.indexOf(lastPit)))[0]
 
 
 
         const newPits = pits.map((pit, index) => {
+
           if (drawIndex === index) {
             return Object.assign({}, pit, { value: x-x })
           }
+
           if (indexNextPits.includes(goal)) {
-            if (otherwisePits.includes(pit)) {
-              return Object.assign({}, pit, { value: pit.value + 1 })
+
+            if (indexNextPits.lastIndexOf(goal) !== 0) {
+
+              if (turn === 0 && lastPit.value === 0) {
+                if (lastPit.belongsToOwner === true && oppositePit.value > 0) {
+                  if (Array(lastPit, oppositePit).includes(pit)) {
+                    return Object.assign({}, pit, { value: 0 })
+                  }
+                  if (otherOtherwisePits.includes(pit)) {
+                    return Object.assign({}, pit, { value: pit.value + 1 })
+                  }
+                }
+              }
+
+              if (turn === 1 && lastPit.value === 0) {
+                if (lastPit.belongsToOwner === false && oppositePit.value > 0) {
+                  if (Array(lastPit, oppositePit).includes(pit)) {
+                    return Object.assign({}, pit, { value: 0 })
+                  }
+                  if (otherOtherwisePits.includes(pit)) {
+                    return Object.assign({}, pit, { value: pit.value + 1 })
+                  }
+                }
+              }
+
+              if (lastPit.value > 0 || oppositePit.value === 0) {
+                if (otherwisePits.includes(pit)) {
+                  return Object.assign({}, pit, { value: pit.value + 1 })
+                }
+              }
+            }
+
+            if (indexNextPits.lastIndexOf(goal) === 0) {
+              if (otherwisePits.includes(pit)) {
+                return Object.assign({}, pit, { value: pit.value + 1 })
+              }
             }
           }
+
           if (indexNextPits.includes(goal) === false) {
-            if (nextPits.includes(pit)) {
-              return Object.assign({}, pit, { value: pit.value + 1 })
+
+            if (turn === 0 && lastPit.value === 0) {
+              if (lastPit.belongsToOwner === true && oppositePit.value > 0) {
+                if (Array(lastPit, oppositePit).includes(pit)) {
+                  return Object.assign({}, pit, { value: 0 })
+                }
+                if (otherwisePits.includes(pit)) {
+                  return Object.assign({}, pit, { value: pit.value + 1 })
+                }
+              }
+            }
+
+            if (turn === 1 && lastPit.value === 0) {
+              if (lastPit.belongsToOwner === false && oppositePit.value > 0) {
+                if (Array(lastPit, oppositePit).includes(pit)) {
+                  return Object.assign({}, pit, { value: 0 })
+                }
+                if (otherwisePits.includes(pit)) {
+                  return Object.assign({}, pit, { value: pit.value + 1 })
+                }
+              }
+            }
+
+            if (lastPit.value > 0 || oppositePit.value === 0) {
+              if (nextPits.includes(pit)) {
+                return Object.assign({}, pit, { value: pit.value + 1 })
+              }
             }
           }
+
           return pit
         })
 
+        // player gets a point when passing own scorepit
         if (indexNextPits.includes(goal)) {
-          let newPlayers = players
           players[turn].score ++
-          hook.data.players = newPlayers
         }
 
+        // player gets points when capturing opponent's pit
+        if (indexNextPits.lastIndexOf(goal) !== 0) {
+          if (lastPit.value === 0 && oppositePit.value > 0) {
+            if ((turn === 1 && lastPit.belongsToOwner === false) || (turn === 0 && lastPit.belongsToOwner === true)) {
+              players[turn].score = players[turn].score + oppositePit.value + 1
+            }
+          }
+        }
+
+        let newPlayers = players
+        if (newPlayers[turn].score > 24) {
+          hook.data.winnerId = newPlayers[turn]._id
+        }
+
+        hook.data.players = newPlayers
+
+        // player keeps the turn if play ends in own scorepit
         let newTurn = (turn === 0) ? 1 : 0
         if (indexNextPits.lastIndexOf(goal) === indexNextPits.length-1) newTurn = newTurn + 1
         if (newTurn + 1 > players.length) newTurn = 0
         hook.data.turn = newTurn
 
 
-
-
-        console.log('**************************************************', newPits, "bottomHalf", bottomHalf, "POPOPOPOP",lastPit )
+        console.log('**************************************************', newPits, "bottomHalf", bottomHalf, "POPOPOPOP",lastPit, "opposite", oppositePit, "indexNextPits.lastIndexOf(goal)", indexNextPits.lastIndexOf(goal))
         console.log('**************************************************', "nextIndex", nextIndex,"indexNextPits", "goal", goal, indexNextPits, indexNextPits.includes(goal), "and nextPits", nextPits, "and otherwisePits", otherwisePits)
-        console.log('**************************************************', players, "turn", turn)
-
+        console.log('**************************************************', players, "turn", turn, "newTurn", newTurn)
+        console.log('winner>>>>>', hook.data.winnerId, players[turn])
 
         hook.data.pits = newPits
 
