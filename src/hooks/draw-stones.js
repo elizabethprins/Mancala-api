@@ -54,14 +54,20 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
         let nextPits = pits.filter((pit, index) => indexNextPits.includes(index))
           let bottomHalf = nextPits.filter((pit) => pit.belongsToOwner === true)
           let topHalf = nextPits.filter((pit) => pit.belongsToOwner === false)
-        // if you have to drop a stone (when passing the scorepit or capturing opponent's pit):
+        // if you have to drop a stone (when passing the scorepit or when capturing opponent's pit):
         let otherwisePits = (turn === 0) ? nextPits.slice(0, nextPits.length-1) : topHalf.concat(bottomHalf).slice(0, nextPits.length-1)
-        // and if you have to drop two (when passing the scorepit AND capturing opponent's pit):
+        // and if you have to drop two (when passing the scorepit AND when capturing opponent's pit):
         let otherOtherwisePits = otherwisePits.slice(0, otherwisePits.length-1)
-
+        // for capturing:
         let lastPit = (indexNextPits.includes(goal)) ? otherwisePits[otherwisePits.length-1] : nextPits[nextPits.length-1]
         let oppositePit = pits.filter((pit, index) => index === (11 - pits.indexOf(lastPit)))[0]
 
+        //see if all the pits on one side are empty
+        let outOfStones1 = (pits.filter((pit) => pit.belongsToOwner === true && pit.value === 0)).length
+        let outOfStones2 = (pits.filter((pit) => pit.belongsToOwner === false && pit.value === 0)).length
+          if (outOfStones1 === 6) outOfStones1 = true
+          if (outOfStones2 === 6) outOfStones2 = true
+        let outOfStones = (outOfStones1 === true) ||(outOfStones2 === true)
 
 
         const newPits = pits.map((pit, index) => {
@@ -157,10 +163,16 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
             }
           }
         }
-
+        // declare a winner
         let newPlayers = players
         if (newPlayers[turn].score > 24) {
           hook.data.winnerId = newPlayers[turn]._id
+        }
+        if ((outOfStones === true) && (newPlayers[0].score > newPlayers[1].score)) {
+          hook.data.winnerId = newPlayers[0]._id
+        }
+        if ((outOfStones === true) && (newPlayers[0].score < newPlayers[1].score)) {
+          hook.data.winnerId = newPlayers[1]._id
         }
 
         hook.data.players = newPlayers
