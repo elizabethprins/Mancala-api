@@ -65,7 +65,8 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
         // and if you have to drop two (when passing the scorepit AND when capturing opponent's pit):
         let otherOtherwisePits = otherwisePits.slice(0, otherwisePits.length-1)
         // for capturing:
-        let lastPit = (indexNextPits.includes(goal)) ? otherwisePits[otherwisePits.length-1] : nextPits[nextPits.length-1]
+        let lastPit = indexNextPits.includes(goal) ? otherwisePits[otherwisePits.length-1] : nextPits[nextPits.length-1]
+          if (indexNextPits.indexOf(goal) === indexNextPits.length-1) { lastPit = undefined }
         let oppositePit = pits.filter((pit, index) => index === (11 - pits.indexOf(lastPit)))[0]
 
         //see if all the pits on one side are empty
@@ -84,7 +85,7 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
 
           if (indexNextPits.includes(goal)) {
 
-            if (indexNextPits.indexOf(goal) !== 0) {
+            if ((indexNextPits.indexOf(goal) !== 0) && (lastPit !== undefined)) {
 
               if (x !== 0) {
 
@@ -110,7 +111,7 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
                   }
                 }
               }
-
+              // MISSING! Method for when lastPit.value === 0 but not player's own 
               if (lastPit.value > 0 || oppositePit.value === 0) {
                 if (otherwisePits.includes(pit)) {
                   return Object.assign({}, pit, { value: pit.value + 1 })
@@ -119,6 +120,12 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
             }
 
             if (indexNextPits.indexOf(goal) === 0) {
+              if (otherwisePits.includes(pit)) {
+                return Object.assign({}, pit, { value: pit.value + 1 })
+              }
+            }
+
+            if ((indexNextPits.indexOf(goal) !== 0) && (lastPit === undefined)) {
               if (otherwisePits.includes(pit)) {
                 return Object.assign({}, pit, { value: pit.value + 1 })
               }
@@ -168,10 +175,12 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
         }
 
         // player gets points when capturing opponent's pit
-        if ((indexNextPits.indexOf(goal) !== 0) && (x !== 0)) {
-          if (lastPit.value === 0 && oppositePit.value > 0) {
-            if ((turn === 1 && lastPit.belongsToOwner === false) || (turn === 0 && lastPit.belongsToOwner === true)) {
-              players[turn].score = players[turn].score + oppositePit.value + 1
+        if (lastPit !== undefined) {
+          if ((indexNextPits.indexOf(goal) !== 0) && (x !== 0)) {
+            if (lastPit.value === 0 && oppositePit.value > 0) {
+              if ((turn === 1 && lastPit.belongsToOwner === false) || (turn === 0 && lastPit.belongsToOwner === true)) {
+                players[turn].score = players[turn].score + oppositePit.value + 1
+              }
             }
           }
         }
@@ -199,7 +208,6 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
 
 
         console.log('**************************************************')
-        console.log("this lastIndexOf business", indexNextPits.lastIndexOf(goal), indexNextPits.indexOf(goal) )
         console.log("outOfStones", outOfStones)
         console.log('winner>>>>>', hook.data.winnerId, players[turn])
 
