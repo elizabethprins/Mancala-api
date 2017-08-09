@@ -9,15 +9,11 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
 
     if (hook.data.draw === undefined) return Promise.resolve(hook);
 
-    console.log(hook.data.draw.index)
-    console.log("draw hook data", hook.data.draw)
-
     const { user } = hook.params;
 
     // see if user is a player
     return hook.app.service('games').get(hook.id)
       .then((game) => {
-        console.log("game", game)
 
         const { players, turn, pits } = game;
         const playerIds = players.map((p) => (p.userId.toString()));
@@ -69,6 +65,11 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
           if (indexNextPits.indexOf(goal) === indexNextPits.length-1) { lastPit = undefined }
         let oppositePit = pits.filter((pit, index) => index === (11 - pits.indexOf(lastPit)))[0]
 
+        // set the requirements for capturing an opponent's pit
+        let gettingLucky = lastPit && (lastPit.value === 0 && oppositePit.value > 0) ? true : false
+        let endOnOwnSide = lastPit && ((turn === 0 && lastPit.belongsToOwner === true) || (turn === 1 && lastPit.belongsToOwner === false)) ? true : false
+        const capture = (gettingLucky && endOnOwnSide)
+
         //see if all the pits on one side are empty
         let outOfStones1 = (pits.filter((pit) => pit.belongsToOwner === true && pit.value === 0)).length
         let outOfStones2 = (pits.filter((pit) => pit.belongsToOwner === false && pit.value === 0)).length
@@ -77,6 +78,7 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
         let outOfStones = (outOfStones1 === true) || (outOfStones2 === true)
 
 
+        // redistribute all the stones according to the play
         const newPits = pits.map((pit, index) => {
 
           if (drawIndex === index) {
@@ -84,48 +86,14 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
           }
 
           if (indexNextPits.includes(goal)) {
-
-            if ((indexNextPits.indexOf(goal) !== 0) && (lastPit !== undefined)) {
-
-              if (x !== 0) {
-
-                if (turn === 0 && lastPit.value === 0) {
-                  if (lastPit.belongsToOwner === true && oppositePit.value > 0) {
-                    if (Array(lastPit, oppositePit).includes(pit)) {
-                      return Object.assign({}, pit, { value: 0 })
-                    }
-                    if (otherOtherwisePits.includes(pit)) {
-                      return Object.assign({}, pit, { value: pit.value + 1 })
-                    }
-                  }
-                }
-
-                if (turn === 1 && lastPit.value === 0) {
-                  if (lastPit.belongsToOwner === false && oppositePit.value > 0) {
-                    if (Array(lastPit, oppositePit).includes(pit)) {
-                      return Object.assign({}, pit, { value: 0 })
-                    }
-                    if (otherOtherwisePits.includes(pit)) {
-                      return Object.assign({}, pit, { value: pit.value + 1 })
-                    }
-                  }
-                }
+            if (capture && (x !== 0)) {
+              if (Array(lastPit, oppositePit).includes(pit)) {
+                return Object.assign({}, pit, { value: 0 })
               }
-              // MISSING! Method for when lastPit.value === 0 but not player's own 
-              if (lastPit.value > 0 || oppositePit.value === 0) {
-                if (otherwisePits.includes(pit)) {
-                  return Object.assign({}, pit, { value: pit.value + 1 })
-                }
-              }
-            }
-
-            if (indexNextPits.indexOf(goal) === 0) {
-              if (otherwisePits.includes(pit)) {
+              if (otherOtherwisePits.includes(pit)) {
                 return Object.assign({}, pit, { value: pit.value + 1 })
               }
-            }
-
-            if ((indexNextPits.indexOf(goal) !== 0) && (lastPit === undefined)) {
+            } else {
               if (otherwisePits.includes(pit)) {
                 return Object.assign({}, pit, { value: pit.value + 1 })
               }
@@ -133,33 +101,14 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
           }
 
           if (indexNextPits.includes(goal) === false) {
-
-            if (x !== 0) {
-
-              if (turn === 0 && lastPit.value === 0) {
-                if (lastPit.belongsToOwner === true && oppositePit.value > 0) {
-                  if (Array(lastPit, oppositePit).includes(pit)) {
-                    return Object.assign({}, pit, { value: 0 })
-                  }
-                  if (otherwisePits.includes(pit)) {
-                    return Object.assign({}, pit, { value: pit.value + 1 })
-                  }
-                }
+            if (capture && (x !== 0)) {
+              if (Array(lastPit, oppositePit).includes(pit)) {
+                return Object.assign({}, pit, { value: 0 })
               }
-
-              if (turn === 1 && lastPit.value === 0) {
-                if (lastPit.belongsToOwner === false && oppositePit.value > 0) {
-                  if (Array(lastPit, oppositePit).includes(pit)) {
-                    return Object.assign({}, pit, { value: 0 })
-                  }
-                  if (otherwisePits.includes(pit)) {
-                    return Object.assign({}, pit, { value: pit.value + 1 })
-                  }
-                }
+              if (otherwisePits.includes(pit)) {
+                return Object.assign({}, pit, { value: pit.value + 1 })
               }
-            }
-
-            if (lastPit.value > 0 || oppositePit.value === 0) {
+            } else {
               if (nextPits.includes(pit)) {
                 return Object.assign({}, pit, { value: pit.value + 1 })
               }
@@ -169,20 +118,15 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
           return pit
         })
 
+
         // player gets a point when passing own scorepit
         if (indexNextPits.includes(goal)) {
           players[turn].score ++
         }
 
         // player gets points when capturing opponent's pit
-        if (lastPit !== undefined) {
-          if ((indexNextPits.indexOf(goal) !== 0) && (x !== 0)) {
-            if (lastPit.value === 0 && oppositePit.value > 0) {
-              if ((turn === 1 && lastPit.belongsToOwner === false) || (turn === 0 && lastPit.belongsToOwner === true)) {
-                players[turn].score = players[turn].score + oppositePit.value + 1
-              }
-            }
-          }
+        if (capture) {
+          players[turn].score = players[turn].score + oppositePit.value + 1
         }
 
         // declare a winner
@@ -190,13 +134,13 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
         if (newPlayers[turn].score > 24) {
           hook.data.winnerId = newPlayers[turn]._id
         }
-        if ((outOfStones === true) && (newPlayers[0].score > newPlayers[1].score)) {
-          hook.data.winnerId = newPlayers[0]._id
+        if (outOfStones === true) {
+          if (newPlayers[0].score > newPlayers[1].score) {
+            hook.data.winnerId = newPlayers[0]._id
+          } else {
+            hook.data.winnerId = newPlayers[1]._id
+          }
         }
-        if ((outOfStones === true) && (newPlayers[0].score < newPlayers[1].score)) {
-          hook.data.winnerId = newPlayers[1]._id
-        }
-
         hook.data.players = newPlayers
 
         // player keeps the turn if play ends in own scorepit
@@ -206,10 +150,6 @@ module.exports = function (options = {}) { // eslint-disable-line no-unused-vars
         if (newTurn + 1 > players.length) { newTurn = 0 }
         hook.data.turn = newTurn
 
-
-        console.log('**************************************************')
-        console.log("outOfStones", outOfStones)
-        console.log('winner>>>>>', hook.data.winnerId, players[turn])
 
         hook.data.pits = newPits
 
